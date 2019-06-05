@@ -64,6 +64,12 @@ class MyGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_4_Core{
         GLuint m_vao;
         GLuint m_ibo;
 
+        QVector3D Oberflächennormale,
+                    Lichtrichtung,
+                    Betrachterrichtung,
+                    Reflektionsrichtung;
+
+        QVector3D IAmbient, IDiffuse, ISpecular, IPhong;
 
     public:
         MyGLWidget(QWidget *parent);
