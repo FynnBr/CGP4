@@ -46,20 +46,23 @@
              <item>
               <widget class="QSpinBox" name="sbFOV">
                <property name="minimum">
-                <number>45</number>
+                <number>0</number>
                </property>
                <property name="maximum">
-                <number>180</number>
+                <number>100</number>
                </property>
               </widget>
              </item>
              <item alignment="Qt::AlignHCenter">
               <widget class="QSlider" name="vsFOV">
                <property name="minimum">
-                <number>45</number>
+                <number>0</number>
                </property>
                <property name="maximum">
-                <number>180</number>
+                <number>100</number>
+               </property>
+               <property name="singleStep">
+                <number>1</number>
                </property>
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -135,7 +138,7 @@
               <item row="0" column="0">
                <widget class="QLabel" name="labelA">
                 <property name="text">
-                 <string>Ring A</string>
+                 <string>A/ Ambient</string>
                 </property>
                </widget>
               </item>
@@ -155,7 +158,7 @@
               <item row="1" column="0">
                <widget class="QLabel" name="labelB">
                 <property name="text">
-                 <string>Ring B</string>
+                 <string>B/ Diffuse</string>
                 </property>
                </widget>
               </item>
@@ -175,7 +178,7 @@
               <item row="2" column="0">
                <widget class="QLabel" name="labelC">
                 <property name="text">
-                 <string>Ring C</string>
+                 <string>C/ Specular</string>
                 </property>
                </widget>
               </item>

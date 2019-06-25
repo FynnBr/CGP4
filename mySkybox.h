@@ -12,6 +12,7 @@ public:
     void initializeGL();
     void render(const QMatrix4x4 &projection, QMatrix4x4 view);
     void finalizeGL();
+    GLuint getHandle() { return m_cubeTex; }
 
 private:
     GLuint m_cubeTex;

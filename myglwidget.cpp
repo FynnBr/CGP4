@@ -10,6 +10,7 @@ MyGLWidget::MyGLWidget(QWidget *parent) : QOpenGLWidget(parent) {
 
 void MyGLWidget::setFOV(int value) {
     m_FOV = value;
+    theShine = value/100;
 }
 
 int MyGLWidget::getFOV() {
@@ -38,6 +39,7 @@ void MyGLWidget::setRotationA(int value) {
     axisC = uRotMatMiddle.transposed() * QVector3D(0, 1, 0);
 
     m_RotationA = value;
+    iAmbient = (float)value/360;
     // mp_program->bind();
     // mp_program->setUniformValue(3,uRotMatOuter);
     // qInfo() << "uRotMatOuter" << uRotMatOuter << "\n uRotMatOuter Transposed " << uRotMatOuter.transposed() << "\n axisB" << axisB << "\n axisC" << axisC << "\n";
@@ -51,6 +53,7 @@ void MyGLWidget::setRotationB(int value) {
     axisC = uRotMatMiddle.transposed() * QVector3D(0, 1, 0);
 
     m_RotationB = value;
+    iDiffuse = (float)value/360;
     // mp_program->bind();
     // mp_program->setUniformValue(3,uRotMatMiddle);
     //this->update();
@@ -60,9 +63,16 @@ void MyGLWidget::setRotationC(int value) {
     uRotMatInner.rotate(value - m_RotationC, axisC);
 
     m_RotationC = value;
+    iSpecular = (float)value/360;
     // mp_program->bind();
     // mp_program->setUniformValue(3,uRotMatInner);
     //this->update();
+}
+
+void MyGLWidget::setRotationT(int value){
+    m_RotationT = value;
+    mp_program->bind();
+    mp_program->setUniformValue(1, float (m_RotationT/100.0));
 }
 
 void MyGLWidget::setNear(double value){
@@ -102,16 +112,16 @@ void MyGLWidget::setFar(double value){
 }
 
 void MyGLWidget::keyPressEvent(QKeyEvent *event) {
-    if(event->key() == Qt::Key_W || event->key() == Qt::Key_Up) {
+    if(event->key() == Qt::Key_W) {
         m_CameraPos.setY(m_CameraPos.y() + .02f);
         updateCamera();
-    } else if(event->key() == Qt::Key_S || event->key() == Qt::Key_Down) {
+    } else if(event->key() == Qt::Key_S) {
         m_CameraPos.setY(m_CameraPos.y() - .02f);
         updateCamera();
-    } else if(event->key() == Qt::Key_A || event->key() == Qt::Key_Left) {
+    } else if(event->key() == Qt::Key_A) {
         m_CameraPos.setX(m_CameraPos.x() - .02f);
         updateCamera();
-    } else if(event->key() == Qt::Key_D || event->key() == Qt::Key_Right) {
+    } else if(event->key() == Qt::Key_D) {
         m_CameraPos.setX(m_CameraPos.x() + .02f);
         updateCamera();
     } else if(event->key() == Qt::Key_Q) {
@@ -119,6 +129,12 @@ void MyGLWidget::keyPressEvent(QKeyEvent *event) {
         updateCamera();
     } else if(event->key() == Qt::Key_E) {
         m_CameraPos.setZ(m_CameraPos.z() + .02f);
+        updateCamera();
+    }else if(event->key() == Qt::Key_Left) {
+        m_CameraAngle.setX(m_CameraAngle.x() - 20.0f);
+        updateCamera();
+    } else if(event->key() == Qt::Key_Right) {
+        m_CameraAngle.setX(m_CameraAngle.x() + 20.0f);
         updateCamera();
     } else {
         QOpenGLWidget::keyPressEvent(event);
@@ -177,10 +193,13 @@ void MyGLWidget::setGimbalCamera(bool gimbalCam){
 
 void MyGLWidget::updateCamera(){
     cameraMat = QMatrix4x4();
-    cameraMat.lookAt(m_CameraPos, //wo Kamera ist
+    /*cameraMat.lookAt(m_CameraPos, //wo Kamera ist
                     {0, 0, 0},    // wo die Kamera hinschaut
                     {0, 1, 0}     // wo oben ist
-                     );
+                     );*/
+
+    cameraMat.translate(-m_CameraPos[1], -m_CameraPos[0], -m_CameraPos[2]);
+    cameraMat.rotate(m_CameraAngle.x(), {0, 1, 0});
 }
 
 //destructor -->
@@ -211,6 +230,70 @@ void MyGLWidget::initializeGL() {
     //object init
     gimbal.initGL(":/objects/gimbal.obj");
     sphere.initGL(":/objects/sphere.obj");
+    light.initGL(":/objects/sphere.obj");
+
+    // Lichter initialisieren
+    lightModel1.translate(lightPos1);
+    lightModel2.translate(lightPos2);
+    lightModel3.translate(lightPos3);
+    lightModel4.translate(lightPos4);
+    lightModel5.translate(lightPos5);
+
+    // Gelbes Licht
+    ls[0].position = lightPos1;
+    ls[0].color = {1.0f, 1.0f, 0.0f};
+    ls[0].ka = 0.8;
+    ls[0].kd = 0.8;
+    ls[0].ks = 1.0;
+    ls[0].constant = 1.0;
+    ls[0].linear = 0.22;
+    ls[0].quadratic = 0.20;
+
+    // Blaues Licht
+    ls[1].position = lightPos1;
+    ls[1].color = {0.0f, 0.0f, 1.0f};
+    ls[1].ka = 0.8;
+    ls[1].kd = 0.8;
+    ls[1].ks = 1.0;
+    ls[1].constant = 1.0;
+    ls[1].linear = 0.22;
+    ls[1].quadratic = 0.20;
+
+    // Weißes Licht
+    ls[2].position = lightPos3;
+    ls[2].color = {.3f, .3f, .3f};
+    ls[2].ka = 0.1;
+    ls[2].kd = 0.1;
+    ls[2].ks = 0.1;
+    ls[2].constant = 1.0;
+    ls[2].linear = 0.7;
+    ls[2].quadratic = 1.8;
+
+    // Lila Licht
+    ls[3].position = lightPos4;
+    ls[3].color = {0.65f, 0.3f, 1.0f};
+    ls[3].ka = 0.8;
+    ls[3].kd = 0.8;
+    ls[3].ks = 1.0;
+    ls[3].constant = .2;
+    ls[3].linear = 0.22;
+    ls[3].quadratic = 0.20;
+
+    // Rotes Licht
+    ls[4].position = lightPos5;
+    ls[4].color = {1.0f, 0.0f, 0.0f};
+    ls[4].ka = 0.8;
+    ls[4].kd = 0.8;
+    ls[4].ks = 1.0;
+    ls[4].constant = 1.0;
+    ls[4].linear = 0.22;
+    ls[4].quadratic = 0.20;
+
+    glGenBuffers(1, &uboLights);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboLights);
+    glBufferData(GL_UNIFORM_BUFFER, NUM_LS * sizeof(LightSource), nullptr, GL_STATIC_DRAW ); // Set Buer size, 64 Byte for each LS
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboLights);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     /*loader.loadObjectFromFile(":/objects/gimbal.obj");
     Q_ASSERT(loader.hasScene());
@@ -281,6 +364,11 @@ void MyGLWidget::initializeGL() {
     mp_program->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/default.vert");
     mp_program->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/default.frag");
     Q_ASSERT(mp_program->link());
+
+    mp_program_light = new QOpenGLShaderProgram();
+    mp_program_light->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/light.vert");
+    mp_program_light->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/light.frag");
+    Q_ASSERT(mp_program_light->link());
 }
 
 void MyGLWidget::resizeGL(int w, int h) {
@@ -292,11 +380,135 @@ void MyGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     skybox.render(projecMat.transposed(), cameraMat);
+
+    glBindBuffer(GL_UNIFORM_BUFFER, uboLights); //Bind Buffer
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboLights);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ls), ls); // Übergebe LS an den Shader
+
     // glBindVertexArray(m_vao);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_tex);
+    //glBindTexture(GL_TEXTURE_2D, m_tex);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.getHandle());
 
-    // Color-Shaderprogramm binden, zeichnen und releasen
+    // Color-Shaderprogramm Binden, Zeichnen und Releasen
+    mp_program->bind();
+    //mp_program->setUniformValue(mp_program->uniformLocation("uLightPosition"), lightPos);
+    mp_program->setUniformValue(8, cameraMat);
+    mp_program->setUniformValue(10, (float)iAmbient);
+    mp_program->setUniformValue(11, (float)iDiffuse);
+    mp_program->setUniformValue(12, (float)iSpecular);
+    mp_program->setUniformValue(13, m_FOV);
+    mp_program->setUniformValue(4, projecMat.transposed());
+    mp_program->setUniformValue(5, cameraMat);
+    mp_program->setUniformValue(3, uRotMatOuter.transposed());
+    //glDrawElements(GL_TRIANGLES, loader.lengthOfIndexArray(), GL_UNSIGNED_INT, nullptr);
+    // Gimbal-Material: Gold
+    //QVector3D ambientMaterial = QVector3D(0.24725, 0.1995, 0.0745);
+    //QVector3D diffuseMaterial = QVector3D(0.75164, 0.60648, 0.22648);
+    //QVector3D specularMaterial = QVector3D(0.628281, 0.555802, 0.366065);
+    QVector3D ambientMaterial = QVector3D(0.25, 0.25, 0.25);
+    QVector3D diffuseMaterial = QVector3D(0.4, 0.4, 0.4);
+    QVector3D specularMaterial = QVector3D(0.774597, 0.774597, 0.774597);
+    float shininess = 0.6;
+    int structLocation = 100;
+    mp_program->setUniformValue(structLocation, ambientMaterial);
+    mp_program->setUniformValue(structLocation + 1, diffuseMaterial);
+    mp_program->setUniformValue(structLocation + 2, specularMaterial);
+    mp_program->setUniformValue(structLocation + 3, shininess);
+    gimbal.drawElements();
+    mp_program->setUniformValue(3, uRotMatMiddle.transposed());
+    //glDrawElements(GL_TRIANGLES, loader.lengthOfIndexArray(), GL_UNSIGNED_INT, nullptr);
+    gimbal.drawElements();
+    mp_program->setUniformValue(3, uRotMatOuter.transposed());
+    gimbal.drawElements();
+    ballA = uRotMatMiddle.transposed();
+    ballA.scale(1/.45);
+    ballA.rotate(++counter,{0,0,1});
+    ballA.translate({0,.52,0});
+    ballA.scale(0.03);
+    ballA.rotate(counter * 3.5,{0,0,1});
+
+    // Ball-Material: Schwarzer Gummi
+    ambientMaterial = QVector3D(0.02, 0.02, 0.02);
+    diffuseMaterial = QVector3D(0.01, 0.01, 0.01);
+    specularMaterial = QVector3D(0.4, 0.4, 0.4);
+    shininess = 0.078125;
+    mp_program->setUniformValue(structLocation, ambientMaterial);
+    mp_program->setUniformValue(structLocation + 1, diffuseMaterial);
+    mp_program->setUniformValue(structLocation + 2, specularMaterial);
+    mp_program->setUniformValue(structLocation + 3, shininess);
+    mp_program->setUniformValue(3, ballA);
+    sphere.drawElements();
+    //glDrawElements(GL_TRIANGLES, loader.lengthOfIndexArray(), GL_UNSIGNED_INT, nullptr);
+    mp_program->release();
+
+    mp_program_light->bind();
+    mp_program_light->setUniformValue(18, projecMat.transposed());
+    mp_program_light->setUniformValue(19, cameraMat);
+
+    // Licht 1 rendern
+    mp_program_light->setUniformValue(20, lightModel1);
+    mp_program_light->setUniformValue(22, ls[0].color);
+    light.drawElements();
+
+    // Licht 2 rendern
+    mp_program_light->setUniformValue(20, lightModel2);
+    mp_program_light->setUniformValue(22, ls[1].color);
+    light.drawElements();
+
+    // Licht 3 rendern
+    mp_program_light->setUniformValue(20, lightModel3);
+    mp_program_light->setUniformValue(22, ls[2].color);
+    light.drawElements();
+
+    // Licht 4 rendern
+    mp_program_light->setUniformValue(20, lightModel4);
+    mp_program_light->setUniformValue(22, ls[3].color);
+    light.drawElements();
+
+    // Licht 5 rendern
+    mp_program_light->setUniformValue(20, lightModel5);
+    mp_program_light->setUniformValue(22, ls[4].color);
+    light.drawElements();
+
+    // Licht 1 animieren
+    lightModel1 = lightModel1.transposed();
+    lightModel1.rotate(1.8, {0,1,0});
+    lightModel1 = lightModel1.transposed();
+    lightPos1.setX(lightModel1.row(0)[3]);
+    lightPos1.setZ(lightModel1.row(2)[3]);
+
+    // Licht 2 animieren
+    lightModel2 = lightModel2.transposed();
+    lightModel2.rotate(1.8, {1,0,0});
+    lightModel2 = lightModel2.transposed();
+    lightPos2.setX(lightModel2.row(0)[3]);
+    lightPos2.setZ(lightModel2.row(2)[3]);
+
+    // Licht 4 animieren
+    lightModel4 = lightModel4.transposed();
+    lightModel4.rotate(1.8, {0,1,0});
+    lightModel4 = lightModel4.transposed();
+    lightPos4.setX(lightModel4.row(0)[3]);
+    lightPos4.setZ(lightModel4.row(2)[3]);
+
+    // Licht 5 animieren
+    lightModel5 = lightModel5.transposed();
+    lightModel5.rotate(1.8, {0,1,0});
+    lightModel5 = lightModel5.transposed();
+    lightPos5.setX(lightModel5.row(0)[3]);
+    lightPos5.setZ(lightModel5.row(2)[3]);
+
+    // Schicke neue Position an Shader
+    ls[0].position = lightPos1;
+    ls[1].position = lightPos2;
+    ls[2].position = lightPos3;
+    ls[3].position = lightPos4;
+    ls[4].position = lightPos5;
+    mp_program_light->release();
+
+
+  /*  // Color-Shaderprogramm binden, zeichnen und releasen
     mp_program->bind();
     // mp_program->setUniformValue(1, TextureMod);
     mp_program->setUniformValue(4, projecMat.transposed());
@@ -326,6 +538,20 @@ void MyGLWidget::paintGL() {
     //glDrawElements(GL_TRIANGLES, loader.lengthOfIndexArray(), GL_UNSIGNED_INT, nullptr);
     mp_program->release();
 
+    // P4 uniform
+//    layout (location = 8) uniform vec3 uViewPosition;
+//    layout (location = 9) uniform vec3 uLightPosition;
+//    layout (location = 10) uniform float uKa; // Ambient
+//    layout(location = 11) uniform float uKd; //Diffuse
+//    layout(location = 12) uniform float uKs; // Specular
+//    layout(location = 13) uniform float uShininess;
+    mp_program->setUniformValue(8, m_CameraPos);
+    mp_program->setUniformValue(9, QVector3D(0.0, 0.0, 0.0));
+    mp_program->setUniformValue(10, iAmbient);
+    mp_program->setUniformValue(11, iDiffuse);
+    mp_program->setUniformValue(12, iSpecular);
+    mp_program->setUniformValue(13, theShine);
+*/
     //Animation Rotation
     if(animationActive){
         setRotationA(m_RotationA + 1);

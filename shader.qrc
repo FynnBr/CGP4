@@ -13,5 +13,7 @@
         <file>skybox_images/left.jpg</file>
         <file>skybox_images/right.jpg</file>
         <file>skybox_images/top.jpg</file>
+        <file>light.frag</file>
+        <file>light.vert</file>
     </qresource>
 </RCC>
