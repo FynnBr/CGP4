@@ -12,16 +12,22 @@ layout(location = 0) out vec2 outCoordinates;
 layout(location = 1) out vec3 vNormal;
 layout(location = 2) out vec3 vFragPos;
 
+layout(location = 0) uniform mat4x4 uModelViewProjectionMatrix;
 layout(location = 3) uniform mat4x4 uRotMat;
 layout(location = 4) uniform mat4x4 projectMat;
 layout(location = 5) uniform mat4x4 viewMat;
 
 void main() {
-    // pass color to fragment shader
-    // gl_Position = vec4(aPosition, 0.0f, 1.0f);
-    vec4 pos = vec4(aPosition, 1.0f);
+    // Farbe an Fragment-Shader übergeben
+    vNormal = mat3(transpose(inverse(uModelViewProjectionMatrix))) * aNormal;
+    //vNormal = aNormals;
 
-    //projectionMat * View * Model (* Position)
-    gl_Position = projectMat * viewMat * uRotMat * pos;
+    // Textur-Koordinaten an Fragment-Shader übergebe
+    outCoordinates = inCoordinates.st;
+
+    vFragPos = vec3(uModelViewProjectionMatrix * vec4(aPosition, 1.0));
+
+    // Vertex-Position übernehmen
+    gl_Position = projectMat * viewMat * uModelViewProjectionMatrix * vec4(aPosition, 1.0);
 }
 
