@@ -4,8 +4,8 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 0) out vec3 vCubeDir;
 
-layout (location = 0) uniform mat4 uProjection;
-layout (location = 1) uniform mat4 uView;
+uniform mat4 uProjection;
+uniform mat4 uView;
 
 void main() {
     vCubeDir = aPos;

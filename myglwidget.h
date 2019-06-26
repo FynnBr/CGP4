@@ -46,11 +46,11 @@ class MyGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_4_Core{
         QMatrix4x4 cameraMat; //view
         QVector3D m_CameraPos;
         QVector2D m_CameraAngle;
-        bool m_GimbalCam;
+        bool m_GimbalCam = false;
 
         ModelLoader loader;
         QElapsedTimer timer;
-        bool animationActive;
+        bool animationActive = false;
 
         MySkybox skybox;
 
