@@ -71,7 +71,7 @@ class MyGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_4_Core{
         GLuint m_ibo;
         unsigned int uboLights;
 
-        struct LightSource {
+        struct LightSource { // padding da trotz vec3 die Größe von vec4 reserviert wird
             QVector3D position;
             float pad0;
             QVector3D color;

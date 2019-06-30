@@ -51,7 +51,8 @@ uniform float uShininess = 1;
 uniform float uConstant = 1.0;
 uniform float uLinear = 0.114;
 uniform float uQuadratic = 0.0007;
-layout(location = 100) uniform Material material;
+layout(location = 100) uniform Material material; // nur ersten Teil einfügen, da
+                                                  // man jetzt material.ambient aufrufen kann
 
 struct PointLight {     // base alignment //    aligned offset //   total bytes
     vec3 position;      // 16                   0                   16
@@ -102,7 +103,7 @@ vec3 calcPhongLight(PointLight light, vec3 viewDirection, vec3 lightDirection) {
 void main() {
 
     // Cubemap Reflektion
-    vec4 texe1 = texture(cubeMap, refract(reflect(vNormal, normalize(uViewPosition - vFragPos)), vNormal, 1.0/2.42));
+    vec4 texe1 = texture(cubeMap, refract(reflect(vNormal, normalize(uViewPosition - vFragPos)), vNormal, 1.0/2.41));
     //vec4 texel = texture(tex0, vTexture + uMove);
     //vec3 objectColor = texel.rgb;
     //vec3 objectColor = vec3(190/255.0f,154/255.0f,100/255.0f);
@@ -114,6 +115,8 @@ void main() {
             result += calcPhongLight(lights[i], viewDir, lightDir);
         //}
     }
+
+    //cubemap textur und result aus allen Lichtquellen
     fragColor = vec4(texe1 * vec4(result, 1.0f));
     //fragColor = vec4(result, 1.0);
 

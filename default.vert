@@ -5,7 +5,7 @@
 // Inputs
 layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec3 aNormals;
-layout(location = 2) in vec2 tC;
+layout(location = 2) in vec2 inCoord;
 uniform mat4x4 uProjection;
 uniform mat4x4 uView;
 uniform mat4x4 uModel;
@@ -22,9 +22,11 @@ void main() {
     //vNormal = aNormals;
 
     // Textur-Koordinaten an Fragment-Shader übergebe
-    vTexture = tC.st;
+    vTexture = inCoord.st;
 
+    //vFragPos = normalize(vec3(uModel * vec4(aPosition, 1.0)));
     vFragPos = vec3(uModel * vec4(aPosition, 1.0));
+
 
     // Vertex-Position übernehmen
     gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);
